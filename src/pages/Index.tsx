@@ -55,8 +55,12 @@ const Index = () => {
   ];
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto">
+    <Layout 
+      title="Convertify - Free Online File Converter & Tools"
+      description="Convert PDF to image, compress files, merge PDFs and more with our free online tools. Fast, secure, and no installation required."
+      keywords="pdf converter, image converter, compress pdf, merge pdf, pdf to image, image to pdf, file converter"
+    >
+      <div className="w-full">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
             Free Online File Converter
@@ -67,7 +71,7 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {tools.map((tool, index) => (
             <ToolCard
               key={index}
