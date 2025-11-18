@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import PdfToImage from "./pages/PdfToImage";
+import JpgToPng from "./pages/JpgToPng";
+import PngToJpg from "./pages/PngToJpg";
+import ImageToPdf from "./pages/ImageToPdf";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -18,6 +21,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/pdf-to-image" element={<PdfToImage />} />
+          <Route path="/jpg-to-png" element={<JpgToPng />} />
+          <Route path="/png-to-jpg" element={<PngToJpg />} />
+          <Route path="/image-to-pdf" element={<ImageToPdf />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
