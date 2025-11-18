@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import ToolCard from "@/components/ToolCard";
+import { useNavigate } from "react-router-dom";
 import { 
   FileImage, 
   FileDown, 
@@ -11,46 +12,56 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+  
   const tools = [
     {
       icon: FileDown,
       title: "PDF to Image",
-      description: "Convert PDF files to high-quality images"
+      description: "Convert PDF files to high-quality images",
+      path: "/pdf-to-image"
     },
     {
       icon: FileImage,
       title: "Image to PDF",
-      description: "Combine multiple images into a single PDF"
+      description: "Combine multiple images into a single PDF",
+      path: "#"
     },
     {
       icon: Minimize,
       title: "Compress PDF",
-      description: "Reduce PDF file size without losing quality"
+      description: "Reduce PDF file size without losing quality",
+      path: "#"
     },
     {
       icon: ImageIcon,
       title: "Image Converter",
-      description: "Convert between JPG, PNG, WebP, and more"
+      description: "Convert between JPG, PNG, WebP, and more",
+      path: "#"
     },
     {
       icon: Minimize,
       title: "Compress Image",
-      description: "Optimize images for web and mobile"
+      description: "Optimize images for web and mobile",
+      path: "#"
     },
     {
       icon: Scissors,
       title: "Split PDF",
-      description: "Extract pages from your PDF document"
+      description: "Extract pages from your PDF document",
+      path: "#"
     },
     {
       icon: Combine,
       title: "Merge PDF",
-      description: "Combine multiple PDFs into one file"
+      description: "Combine multiple PDFs into one file",
+      path: "#"
     },
     {
       icon: FileText,
       title: "Edit PDF",
-      description: "Add text, images, and signatures to PDFs"
+      description: "Add text, images, and signatures to PDFs",
+      path: "#"
     }
   ];
 
@@ -78,7 +89,7 @@ const Index = () => {
               icon={tool.icon}
               title={tool.title}
               description={tool.description}
-              onClick={() => console.log(`Clicked: ${tool.title}`)}
+              onClick={() => tool.path !== "#" ? navigate(tool.path) : console.log(`Coming soon: ${tool.title}`)}
             />
           ))}
         </div>
