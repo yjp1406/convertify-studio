@@ -15,12 +15,12 @@ const Index = () => {
   const navigate = useNavigate();
   
   const tools = [
-    {
-      icon: FileDown,
-      title: "PDF to Image",
-      description: "Convert PDF files to high-quality images",
-      path: "/pdf-to-image"
-    },
+    // {
+    //   icon: FileDown,
+    //   title: "PDF to Image",
+    //   description: "Convert PDF files to high-quality images",
+    //   path: "/pdf-to-image"
+    // },
     {
       icon: FileImage,
       title: "Image to PDF",
@@ -39,42 +39,42 @@ const Index = () => {
       description: "Convert PNG images to JPG format",
       path: "/png-to-jpg"
     },
-    {
-      icon: Minimize,
-      title: "Compress PDF",
-      description: "Reduce PDF file size without losing quality",
-      path: "#"
-    },
-    {
-      icon: ImageIcon,
-      title: "Image Converter",
-      description: "Convert between JPG, PNG, WebP, and more",
-      path: "#"
-    },
-    {
-      icon: Minimize,
-      title: "Compress Image",
-      description: "Optimize images for web and mobile",
-      path: "#"
-    },
-    {
-      icon: Scissors,
-      title: "Split PDF",
-      description: "Extract pages from your PDF document",
-      path: "#"
-    },
-    {
-      icon: Combine,
-      title: "Merge PDF",
-      description: "Combine multiple PDFs into one file",
-      path: "#"
-    },
-    {
-      icon: FileText,
-      title: "Edit PDF",
-      description: "Add text, images, and signatures to PDFs",
-      path: "#"
-    }
+    // {
+    //   icon: Minimize,
+    //   title: "Compress PDF",
+    //   description: "Reduce PDF file size without losing quality",
+    //   path: "#"
+    // },
+    // {
+    //   icon: ImageIcon,
+    //   title: "Image Converter",
+    //   description: "Convert between JPG, PNG, WebP, and more",
+    //   path: "#"
+    // },
+    // {
+    //   icon: Minimize,
+    //   title: "Compress Image",
+    //   description: "Optimize images for web and mobile",
+    //   path: "#"
+    // },
+    // {
+    //   icon: Scissors,
+    //   title: "Split PDF",
+    //   description: "Extract pages from your PDF document",
+    //   path: "#"
+    // },
+    // {
+    //   icon: Combine,
+    //   title: "Merge PDF",
+    //   description: "Combine multiple PDFs into one file",
+    //   path: "#"
+    // },
+    // {
+    //   icon: FileText,
+    //   title: "Edit PDF",
+    //   description: "Add text, images, and signatures to PDFs",
+    //   path: "#"
+    // }
   ];
 
   return (

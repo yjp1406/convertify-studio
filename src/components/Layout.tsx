@@ -4,6 +4,7 @@ import AdTop from "./AdTop";
 import AdBottom from "./AdBottom";
 import AdSide from "./AdSide";
 import SEOHead from "./SEOHead";
+import Footer from "./Footer";
 
 interface LayoutProps {
   children: ReactNode;
@@ -26,21 +27,22 @@ const Layout = ({ children, title, description, keywords, showSidebar = false }:
           <div className="mx-auto max-w-7xl">
             <div className="flex gap-8 flex-col lg:flex-row">
               <div className={`flex-1 ${showSidebar ? 'lg:max-w-3xl' : 'max-w-3xl mx-auto w-full'} space-y-8`}>
-                <AdTop />
+                {/* <AdTop /> */}
                 
                 <div className="space-y-6">
                   {children}
                 </div>
                 
-                <AdBottom />
+                {/* <AdBottom /> */}
               </div>
               
-              {showSidebar && (
+              {/* {showSidebar && (
                 <aside className="lg:w-80 flex-shrink-0">
                   <AdSide />
                 </aside>
-              )}
+              )} */}
             </div>
+              <Footer />
           </div>
         </main>
       </div>

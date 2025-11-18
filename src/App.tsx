@@ -9,6 +9,10 @@ import JpgToPng from "./pages/JpgToPng";
 import PngToJpg from "./pages/PngToJpg";
 import ImageToPdf from "./pages/ImageToPdf";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
+import TermsAndConditions from "./pages/TermsAndConditions";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +24,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/pdf-to-image" element={<PdfToImage />} />
           <Route path="/jpg-to-png" element={<JpgToPng />} />
           <Route path="/png-to-jpg" element={<PngToJpg />} />
