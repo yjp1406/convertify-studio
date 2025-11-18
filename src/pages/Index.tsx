@@ -25,7 +25,19 @@ const Index = () => {
       icon: FileImage,
       title: "Image to PDF",
       description: "Combine multiple images into a single PDF",
-      path: "#"
+      path: "/image-to-pdf"
+    },
+    {
+      icon: FileImage,
+      title: "JPG to PNG",
+      description: "Convert JPG images to PNG format",
+      path: "/jpg-to-png"
+    },
+    {
+      icon: FileImage,
+      title: "PNG to JPG",
+      description: "Convert PNG images to JPG format",
+      path: "/png-to-jpg"
     },
     {
       icon: Minimize,

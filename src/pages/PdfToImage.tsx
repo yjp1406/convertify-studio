@@ -32,6 +32,7 @@ const PdfToImage = () => {
       title="PDF to Image Converter - Convertify"
       description="Convert PDF files to high-quality images. Free, fast, and secure online PDF to image converter."
       keywords="pdf to image, pdf converter, pdf to jpg, pdf to png"
+      showSidebar={true}
     >
       <div className="space-y-6">
         <div className="text-center">

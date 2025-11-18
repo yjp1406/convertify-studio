@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import Navbar from "./Navbar";
 import AdTop from "./AdTop";
 import AdBottom from "./AdBottom";
+import AdSide from "./AdSide";
 import SEOHead from "./SEOHead";
 
 interface LayoutProps {
@@ -9,9 +10,10 @@ interface LayoutProps {
   title?: string;
   description?: string;
   keywords?: string;
+  showSidebar?: boolean;
 }
 
-const Layout = ({ children, title, description, keywords }: LayoutProps) => {
+const Layout = ({ children, title, description, keywords, showSidebar = false }: LayoutProps) => {
   return (
     <>
       <SEOHead title={title} description={description} keywords={keywords} />
@@ -21,14 +23,24 @@ const Layout = ({ children, title, description, keywords }: LayoutProps) => {
         </header>
         
         <main className="w-full px-4 py-8">
-          <div className="mx-auto max-w-3xl space-y-8">
-            <AdTop />
-            
-            <div className="space-y-6">
-              {children}
+          <div className="mx-auto max-w-7xl">
+            <div className="flex gap-8 flex-col lg:flex-row">
+              <div className={`flex-1 ${showSidebar ? 'lg:max-w-3xl' : 'max-w-3xl mx-auto w-full'} space-y-8`}>
+                <AdTop />
+                
+                <div className="space-y-6">
+                  {children}
+                </div>
+                
+                <AdBottom />
+              </div>
+              
+              {showSidebar && (
+                <aside className="lg:w-80 flex-shrink-0">
+                  <AdSide />
+                </aside>
+              )}
             </div>
-            
-            <AdBottom />
           </div>
         </main>
       </div>
