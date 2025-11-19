@@ -42,8 +42,8 @@ const Layout = ({ children, title, description, keywords, showSidebar = false }:
                 </aside>
               )} */}
             </div>
-              <Footer />
           </div>
+              <Footer />
         </main>
       </div>
     </>
