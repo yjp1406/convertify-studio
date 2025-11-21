@@ -1,22 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
 import WebAppSchema from "@/components/WebAppSchema";
 import { Button } from "@/components/ui/button";
-import { Download, X } from "lucide-react";
+import { Download, X, GripVertical, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { PDFDocument } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PdfFile {
   name: string;
   blob: Blob;
   pages: number;
+  preview?: string;
 }
 
 const MergePdf = () => {
   const [pdfFiles, setPdfFiles] = useState<PdfFile[]>([]);
   const [isMerging, setIsMerging] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const faqs = [
     {
@@ -45,16 +51,46 @@ const MergePdf = () => {
     }
   ];
 
+  const generatePdfThumbnail = async (blob: Blob): Promise<string> => {
+    try {
+      const arrayBuffer = await blob.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
+      
+      const viewport = page.getViewport({ scale: 0.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+        canvas: canvas
+      }).promise;
+      
+      return canvas.toDataURL();
+    } catch (error) {
+      console.error("Failed to generate thumbnail:", error);
+      return "";
+    }
+  };
+
   const handleFileSelect = async (fileBlob: Blob, fileName: string) => {
     try {
       const arrayBuffer = await fileBlob.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pageCount = pdfDoc.getPageCount();
+      
+      // Generate thumbnail
+      const preview = await generatePdfThumbnail(fileBlob);
 
       setPdfFiles(prev => [...prev, {
         name: fileName,
         blob: fileBlob,
-        pages: pageCount
+        pages: pageCount,
+        preview
       }]);
       
       toast.success(`Added ${fileName} (${pageCount} pages)`);
@@ -67,10 +103,35 @@ const MergePdf = () => {
   const handleRemovePdf = (index: number) => {
     setPdfFiles(prev => {
       const newFiles = [...prev];
+      // Clean up preview URL if it exists
+      if (newFiles[index].preview) {
+        URL.revokeObjectURL(newFiles[index].preview!);
+      }
       newFiles.splice(index, 1);
       return newFiles;
     });
     toast.success("PDF removed");
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newFiles = [...pdfFiles];
+    const draggedFile = newFiles[draggedIndex];
+    newFiles.splice(draggedIndex, 1);
+    newFiles.splice(index, 0, draggedFile);
+    
+    setPdfFiles(newFiles);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const handleMerge = async () => {
@@ -140,7 +201,7 @@ const MergePdf = () => {
           <FileDropZone
             onFileSelect={handleFileSelect}
             acceptedTypes="pdf"
-            maxSizeMB={20}
+            maxSizeMB={50}
             multiple={true}
           />
 
@@ -156,17 +217,40 @@ const MergePdf = () => {
                 {pdfFiles.map((file, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between bg-card border border-border rounded-lg p-4"
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`flex items-center gap-3 bg-card border border-border rounded-lg p-4 transition-all cursor-move hover:shadow-md ${
+                      draggedIndex === index ? 'opacity-50' : ''
+                    }`}
                   >
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">{file.name}</p>
+                    <GripVertical className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    
+                    {file.preview ? (
+                      <div className="w-16 h-20 rounded overflow-hidden border border-border flex-shrink-0">
+                        <img 
+                          src={file.preview} 
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-20 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground truncate">{file.name}</p>
                       <p className="text-sm text-muted-foreground">{file.pages} pages</p>
                     </div>
+                    
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRemovePdf(index)}
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive flex-shrink-0"
                     >
                       <X className="h-4 w-4" />
                     </Button>

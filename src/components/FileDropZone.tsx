@@ -14,7 +14,7 @@ interface FileDropZoneProps {
 const FileDropZone = ({ 
   onFileSelect, 
   acceptedTypes = "both",
-  maxSizeMB = 20,
+  maxSizeMB = 50,
   className,
   multiple = false
 }: FileDropZoneProps) => {
