@@ -45,17 +45,11 @@ const Index = () => {
       description: "Combine multiple PDFs into one file",
       path: "/merge-pdf"
     },
-    {
-      icon: Minimize,
-      title: "Compress PDF",
-      description: "Reduce PDF file size without losing quality",
-      path: "/compress-pdf"
-    },
     // {
     //   icon: Minimize,
     //   title: "Compress PDF",
     //   description: "Reduce PDF file size without losing quality",
-    //   path: "#"
+    //   path: "/compress-pdf"
     // },
     // {
     //   icon: ImageIcon,
