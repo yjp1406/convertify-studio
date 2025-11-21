@@ -92,7 +92,7 @@ const Index = () => {
       <div className="w-full">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Free Online File Converter
+            Free Online Image & PDF Converter Tools
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Convert, compress, and edit your files with our free online tools. 
