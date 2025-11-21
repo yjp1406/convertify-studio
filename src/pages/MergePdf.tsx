@@ -141,6 +141,7 @@ const MergePdf = () => {
             onFileSelect={handleFileSelect}
             acceptedTypes="pdf"
             maxSizeMB={20}
+            multiple={true}
           />
 
           {pdfFiles.length > 0 && (
