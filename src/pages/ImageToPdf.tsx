@@ -185,6 +185,7 @@ const ImageToPdf = () => {
             onFileSelect={handleFileSelect}
             acceptedTypes="images"
             maxSizeMB={20}
+            multiple={true}
           />
 
           {images.length > 0 && (
