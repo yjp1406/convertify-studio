@@ -6,7 +6,7 @@ import WebAppSchema from "@/components/WebAppSchema";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { PDFDocument } from "pdf-lib";
 
@@ -20,6 +20,7 @@ const ImageToPdf = () => {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [singlePdf, setSinglePdf] = useState(true);
   const [isConverting, setIsConverting] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const faqs = [
     {
@@ -157,6 +158,27 @@ const ImageToPdf = () => {
     });
   };
 
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newImages = [...images];
+    const draggedImage = newImages[draggedIndex];
+    newImages.splice(draggedIndex, 1);
+    newImages.splice(index, 0, draggedImage);
+    
+    setImages(newImages);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
   return (
     <>
       <FAQSchema faqs={faqs} />
@@ -184,7 +206,7 @@ const ImageToPdf = () => {
           <FileDropZone
             onFileSelect={handleFileSelect}
             acceptedTypes="images"
-            maxSizeMB={20}
+            maxSizeMB={50}
             multiple={true}
           />
 
@@ -206,17 +228,29 @@ const ImageToPdf = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <div className="rounded-lg overflow-hidden border border-border bg-card aspect-square">
+                  <div 
+                    key={index} 
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative group cursor-move transition-all ${
+                      draggedIndex === index ? 'opacity-50 scale-95' : ''
+                    }`}
+                  >
+                    <div className="rounded-lg overflow-hidden border-2 border-border bg-card aspect-square hover:border-primary transition-colors">
                       <img 
                         src={image.preview} 
                         alt={image.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
+                    <div className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <GripVertical className="h-4 w-4 text-foreground" />
+                    </div>
                     <button
                       onClick={() => handleRemoveImage(index)}
-                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110"
                     >
                       ×
                     </button>
