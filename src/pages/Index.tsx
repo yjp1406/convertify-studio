@@ -39,6 +39,18 @@ const Index = () => {
       description: "Convert PNG images to JPG format",
       path: "/png-to-jpg"
     },
+    {
+      icon: Combine,
+      title: "Merge PDF",
+      description: "Combine multiple PDFs into one file",
+      path: "/merge-pdf"
+    },
+    {
+      icon: Minimize,
+      title: "Compress PDF",
+      description: "Reduce PDF file size without losing quality",
+      path: "/compress-pdf"
+    },
     // {
     //   icon: Minimize,
     //   title: "Compress PDF",
