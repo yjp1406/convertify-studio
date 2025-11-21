@@ -21,6 +21,7 @@ export default function Footer() {
             <li><Link to="/jpg-to-png">JPG to PNG</Link></li>
             <li><Link to="/png-to-jpg">PNG to JPG</Link></li>
             <li><Link to="/image-to-pdf">Image to PDF</Link></li>
+            <li><Link to="/merge-pdf">Merge PDF</Link></li>
             <li className="text-gray-400">(More coming soon)</li>
           </ul>
         </div>
