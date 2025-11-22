@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { PDFDocument } from "pdf-lib";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface CompressionTarget {
   label: string;
@@ -112,40 +116,71 @@ const CompressPdf = () => {
     setIsCompressing(true);
     try {
       const arrayBuffer = await pdfFile.blob.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      
-      const scale = compressionTargets[selectedTarget].scale;
+      const originalSize = pdfFile.size;
 
-      // Create a new PDF with compressed content
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pageCount = pdf.numPages;
+
+      const compressionScale = compressionTargets[selectedTarget].scale;
+      const qualityMap = [0.92, 0.85, 0.75, 0.65];
+      const jpegQuality = qualityMap[selectedTarget] ?? 0.8;
+
       const compressedPdf = await PDFDocument.create();
-      
-      // Copy pages with image compression
-      const pageCount = pdfDoc.getPageCount();
-      for (let i = 0; i < pageCount; i++) {
-        const [copiedPage] = await compressedPdf.copyPages(pdfDoc, [i]);
-        compressedPdf.addPage(copiedPage);
+
+      for (let i = 1; i <= pageCount; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: compressionScale });
+
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) continue;
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page
+          .render({
+            canvasContext: context,
+            viewport,
+            canvas,
+          })
+          .promise;
+
+        const dataUrl = canvas.toDataURL("image/jpeg", jpegQuality);
+        const response = await fetch(dataUrl);
+        const imgBuffer = await response.arrayBuffer();
+
+        const jpgImage = await compressedPdf.embedJpg(new Uint8Array(imgBuffer));
+        const pdfPage = compressedPdf.addPage([jpgImage.width, jpgImage.height]);
+        pdfPage.drawImage(jpgImage, {
+          x: 0,
+          y: 0,
+          width: jpgImage.width,
+          height: jpgImage.height,
+        });
       }
 
-      // Save with compression options
       const compressedPdfBytes = await compressedPdf.save({
         useObjectStreams: true,
         addDefaultPage: false,
-        objectsPerTick: 50,
       });
 
       const compressedSize = compressedPdfBytes.length;
-      const originalSize = pdfFile.size;
       const reduction = Math.round(((originalSize - compressedSize) / originalSize) * 100);
 
-      const blob = new Blob([compressedPdfBytes as any], { type: 'application/pdf' });
+      const blob = new Blob([compressedPdfBytes as any], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = pdfFile.name.replace('.pdf', '_compressed.pdf');
+      a.download = pdfFile.name.replace(".pdf", "_compressed.pdf");
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success(`PDF compressed! Reduced by ${reduction}%`);
+      if (reduction > 0) {
+        toast.success(`PDF compressed! Reduced by ${reduction}%`);
+      } else {
+        toast.success("PDF processed, but no further size reduction was possible.");
+      }
     } catch (error) {
       toast.error("Failed to compress PDF");
       console.error(error);
@@ -181,7 +216,7 @@ const CompressPdf = () => {
           <FileDropZone
             onFileSelect={handleFileSelect}
             acceptedTypes="pdf"
-            maxSizeMB={20}
+            maxSizeMB={50}
           />
 
           {pdfFile && (
