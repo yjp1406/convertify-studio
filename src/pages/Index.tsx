@@ -15,12 +15,6 @@ const Index = () => {
   const navigate = useNavigate();
   
   const tools = [
-    // {
-    //   icon: FileDown,
-    //   title: "PDF to Image",
-    //   description: "Convert PDF files to high-quality images",
-    //   path: "/pdf-to-image"
-    // },
     {
       icon: FileImage,
       title: "Image to PDF",
@@ -40,10 +34,28 @@ const Index = () => {
       path: "/png-to-jpg"
     },
     {
+      icon: ImageIcon,
+      title: "WebP to JPG",
+      description: "Convert WebP images to JPG format",
+      path: "/webp-to-jpg"
+    },
+    {
+      icon: ImageIcon,
+      title: "HEIC to JPG",
+      description: "Convert Apple HEIC photos to JPG",
+      path: "/heic-to-jpg"
+    },
+    {
       icon: Combine,
       title: "Merge PDF",
       description: "Combine multiple PDFs into one file",
       path: "/merge-pdf"
+    },
+    {
+      icon: Scissors,
+      title: "Split PDF",
+      description: "Extract pages from your PDF document",
+      path: "/split-pdf"
     },
     // {
     //   icon: Minimize,
@@ -51,36 +63,6 @@ const Index = () => {
     //   description: "Reduce PDF file size without losing quality",
     //   path: "/compress-pdf"
     // },
-    // {
-    //   icon: ImageIcon,
-    //   title: "Image Converter",
-    //   description: "Convert between JPG, PNG, WebP, and more",
-    //   path: "#"
-    // },
-    // {
-    //   icon: Minimize,
-    //   title: "Compress Image",
-    //   description: "Optimize images for web and mobile",
-    //   path: "#"
-    // },
-    // {
-    //   icon: Scissors,
-    //   title: "Split PDF",
-    //   description: "Extract pages from your PDF document",
-    //   path: "#"
-    // },
-    // {
-    //   icon: Combine,
-    //   title: "Merge PDF",
-    //   description: "Combine multiple PDFs into one file",
-    //   path: "#"
-    // },
-    // {
-    //   icon: FileText,
-    //   title: "Edit PDF",
-    //   description: "Add text, images, and signatures to PDFs",
-    //   path: "#"
-    // }
   ];
 
   return (
