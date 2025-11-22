@@ -10,6 +10,9 @@ import PngToJpg from "./pages/PngToJpg";
 import ImageToPdf from "./pages/ImageToPdf";
 import MergePdf from "./pages/MergePdf";
 import CompressPdf from "./pages/CompressPdf";
+import WebpToJpg from "./pages/WebpToJpg";
+import HeicToJpg from "./pages/HeicToJpg";
+import SplitPdf from "./pages/SplitPdf";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Contact from "./pages/Contact";
@@ -36,6 +39,9 @@ const App = () => (
           <Route path="/image-to-pdf" element={<ImageToPdf />} />
           <Route path="/merge-pdf" element={<MergePdf />} />
           <Route path="/compress-pdf" element={<CompressPdf />} />
+          <Route path="/webp-to-jpg" element={<WebpToJpg />} />
+          <Route path="/heic-to-jpg" element={<HeicToJpg />} />
+          <Route path="/split-pdf" element={<SplitPdf />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

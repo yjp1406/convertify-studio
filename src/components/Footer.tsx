@@ -20,9 +20,11 @@ export default function Footer() {
           <ul className="space-y-2 text-muted-foreground">
             <li><Link to="/jpg-to-png">JPG to PNG</Link></li>
             <li><Link to="/png-to-jpg">PNG to JPG</Link></li>
+            <li><Link to="/webp-to-jpg">WebP to JPG</Link></li>
+            <li><Link to="/heic-to-jpg">HEIC to JPG</Link></li>
             <li><Link to="/image-to-pdf">Image to PDF</Link></li>
             <li><Link to="/merge-pdf">Merge PDF</Link></li>
-            <li className="text-gray-400">(More coming soon)</li>
+            <li><Link to="/split-pdf">Split PDF</Link></li>
           </ul>
         </div>
 
