@@ -8,7 +8,7 @@ export default function Contact() {
       </p>
 
       <p className="font-medium">
-        Email: <span className="text-blue-600">support@convertify.com</span>
+        Email: <span className="text-blue-600">yagneshjp1406@gmail.com</span>
       </p>
 
       <p className="text-muted-foreground mt-4">

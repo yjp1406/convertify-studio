@@ -32,7 +32,7 @@ export default function PrivacyPolicy() {
       <h2 className="text-xl font-semibold mt-6">4. Contact</h2>
       <p>
         If you have questions, email us at:  
-        <strong> support@convertify.com</strong>
+        <strong> yagneshjp1406@gmail.com</strong>
       </p>
     </div>
   );
