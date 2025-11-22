@@ -57,12 +57,12 @@ const Index = () => {
       description: "Extract pages from your PDF document",
       path: "/split-pdf"
     },
-    // {
-    //   icon: Minimize,
-    //   title: "Compress PDF",
-    //   description: "Reduce PDF file size without losing quality",
-    //   path: "/compress-pdf"
-    // },
+    {
+      icon: Minimize,
+      title: "Compress PDF",
+      description: "Reduce PDF file size without losing quality",
+      path: "/compress-pdf"
+    },
   ];
 
   return (

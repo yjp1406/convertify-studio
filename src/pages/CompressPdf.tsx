@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { PDFDocument } from "pdf-lib";
-import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// ❗ FIXED: Correct imports for pdf.js (Vite compatible)
+import { GlobalWorkerOptions, getDocument } from "pdfjs-dist/legacy/build/pdf";
+import pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.min.js?url";
+
+GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface CompressionTarget {
   label: string;
@@ -45,15 +47,15 @@ const CompressPdf = () => {
     },
     {
       question: "How much can I compress my PDF?",
-      answer: "Compression results vary depending on the PDF content. PDFs with many images can be compressed significantly (50-70%), while text-heavy PDFs may see smaller reductions. Actual results depend on the original file composition."
+      answer: "Compression results vary depending on the PDF content. PDFs with many images can be compressed significantly (50-70%), while text-heavy PDFs may see smaller reductions."
     },
     {
       question: "Is my PDF file uploaded to a server?",
-      answer: "No, all PDF compression happens locally in your browser using client-side JavaScript. Your file never leaves your device, ensuring complete privacy and security."
+      answer: "No, all PDF compression happens locally in your browser. Your file never leaves your device."
     },
     {
       question: "Can I compress already compressed PDFs?",
-      answer: "Yes, but results may be limited. If a PDF has already been heavily compressed, further compression may not yield significant size reductions and could degrade quality."
+      answer: "Yes, but results may be limited. Further compression may not yield significant reductions."
     }
   ];
 
@@ -74,6 +76,7 @@ const CompressPdf = () => {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
+  // ❗ You had this function but never used it. Keeping it untouched.
   const compressImage = async (imageData: Uint8Array, type: 'jpg' | 'png', scale: number): Promise<Uint8Array> => {
     return new Promise((resolve) => {
       const blob = new Blob([imageData as any], { type: type === 'jpg' ? 'image/jpeg' : 'image/png' });
@@ -93,9 +96,7 @@ const CompressPdf = () => {
         canvas.toBlob((compressedBlob) => {
           if (compressedBlob) {
             const reader = new FileReader();
-            reader.onload = () => {
-              resolve(new Uint8Array(reader.result as ArrayBuffer));
-            };
+            reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
             reader.readAsArrayBuffer(compressedBlob);
           } else {
             resolve(imageData);
@@ -114,11 +115,13 @@ const CompressPdf = () => {
     }
 
     setIsCompressing(true);
+
     try {
       const arrayBuffer = await pdfFile.blob.arrayBuffer();
       const originalSize = pdfFile.size;
 
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      // ❗ FIXED: Correct getDocument import
+      const pdf = await getDocument({ data: arrayBuffer }).promise;
       const pageCount = pdf.numPages;
 
       const compressionScale = compressionTargets[selectedTarget].scale;
@@ -138,42 +141,45 @@ const CompressPdf = () => {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-        await page
-          .render({
-            canvasContext: context,
-            viewport,
-            canvas,
-          })
-          .promise;
+        // ❗ FIXED: removed invalid render argument "canvas"
+        await page.render({
+          canvasContext: context,
+          viewport
+        }).promise;
 
+        // ❗ FIXED: correct base64 → Uint8Array conversion
         const dataUrl = canvas.toDataURL("image/jpeg", jpegQuality);
-        const response = await fetch(dataUrl);
-        const imgBuffer = await response.arrayBuffer();
+        const base64 = dataUrl.split(",")[1];
+        const imgBuffer = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
 
-        const jpgImage = await compressedPdf.embedJpg(new Uint8Array(imgBuffer));
+        const jpgImage = await compressedPdf.embedJpg(imgBuffer);
         const pdfPage = compressedPdf.addPage([jpgImage.width, jpgImage.height]);
+
         pdfPage.drawImage(jpgImage, {
           x: 0,
           y: 0,
           width: jpgImage.width,
-          height: jpgImage.height,
+          height: jpgImage.height
         });
       }
 
       const compressedPdfBytes = await compressedPdf.save({
         useObjectStreams: true,
-        addDefaultPage: false,
+        addDefaultPage: false
       });
 
       const compressedSize = compressedPdfBytes.length;
       const reduction = Math.round(((originalSize - compressedSize) / originalSize) * 100);
-
-      const blob = new Blob([compressedPdfBytes as any], { type: "application/pdf" });
+      const uint8 = new Uint8Array(compressedPdfBytes);
+      // const blob = new Blob([compressedPdfBytes], { type: "application/pdf" }
+      const blob = new Blob([uint8], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = pdfFile.name.replace(".pdf", "_compressed.pdf");
       a.click();
+
       URL.revokeObjectURL(url);
 
       if (reduction > 0) {
@@ -182,8 +188,8 @@ const CompressPdf = () => {
         toast.success("PDF processed, but no further size reduction was possible.");
       }
     } catch (error) {
-      toast.error("Failed to compress PDF");
       console.error(error);
+      toast.error("Failed to compress PDF");
     } finally {
       setIsCompressing(false);
     }
