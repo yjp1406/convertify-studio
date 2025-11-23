@@ -1,58 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Sitemap for Convertify Studio | Auto-generated -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
     <loc>https://convertify-studio.netlify.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/jpg-to-png</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/png-to-jpg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/image-to-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/merge-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/split-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/webp-to-jpg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/heic-to-jpg</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
   <url>
     <loc>https://convertify-studio.netlify.app/compress-pdf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <lastmod>2025-11-23</lastmod>
   </url>
 
 </urlset>
