@@ -64,11 +64,10 @@ const MergePdf = () => {
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-        canvas: canvas
-      }).promise;
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
       
       return canvas.toDataURL();
     } catch (error) {
