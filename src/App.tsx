@@ -19,6 +19,19 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import TermsAndConditions from "./pages/TermsAndConditions";
 
+// Blog pages
+import BlogIndex from "./pages/blog/Index";
+import JpgToPngQuality from "./pages/blog/JpgToPngQuality";
+import HeicConversionGuide from "./pages/blog/HeicConversionGuide";
+import PdfCompressionExplained from "./pages/blog/PdfCompressionExplained";
+import BestImageTools2025 from "./pages/blog/BestImageTools2025";
+import ReducePdfForEmail from "./pages/blog/ReducePdfForEmail";
+import OnlineConverterSecurity from "./pages/blog/OnlineConverterSecurity";
+import WebpFormatGuide from "./pages/blog/WebpFormatGuide";
+import MergePdfsTutorial from "./pages/blog/MergePdfsTutorial";
+import ImageFormatsExplained from "./pages/blog/ImageFormatsExplained";
+import FixPdfTooLargeError from "./pages/blog/FixPdfTooLargeError";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -42,6 +55,20 @@ const App = () => (
           <Route path="/webp-to-jpg" element={<WebpToJpg />} />
           <Route path="/heic-to-jpg" element={<HeicToJpg />} />
           <Route path="/split-pdf" element={<SplitPdf />} />
+          
+          {/* Blog routes */}
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/jpg-to-png-without-losing-quality" element={<JpgToPngQuality />} />
+          <Route path="/blog/heic-conversion-guide" element={<HeicConversionGuide />} />
+          <Route path="/blog/pdf-compression-explained" element={<PdfCompressionExplained />} />
+          <Route path="/blog/best-free-image-tools-2025" element={<BestImageTools2025 />} />
+          <Route path="/blog/reduce-pdf-size-for-email" element={<ReducePdfForEmail />} />
+          <Route path="/blog/online-file-converter-security" element={<OnlineConverterSecurity />} />
+          <Route path="/blog/what-is-webp" element={<WebpFormatGuide />} />
+          <Route path="/blog/how-to-merge-pdfs" element={<MergePdfsTutorial />} />
+          <Route path="/blog/image-formats-explained" element={<ImageFormatsExplained />} />
+          <Route path="/blog/fix-pdf-too-large-error" element={<FixPdfTooLargeError />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
