@@ -1,38 +1,52 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import PdfToImage from "./pages/PdfToImage";
-import JpgToPng from "./pages/JpgToPng";
-import PngToJpg from "./pages/PngToJpg";
-import ImageToPdf from "./pages/ImageToPdf";
-import MergePdf from "./pages/MergePdf";
-import CompressPdf from "./pages/CompressPdf";
-import WebpToJpg from "./pages/WebpToJpg";
-import HeicToJpg from "./pages/HeicToJpg";
-import SplitPdf from "./pages/SplitPdf";
-import NotFound from "./pages/NotFound";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Contact from "./pages/Contact";
-import About from "./pages/About";
-import TermsAndConditions from "./pages/TermsAndConditions";
 
-// Blog pages
-import BlogIndex from "./pages/blog/Index";
-import JpgToPngQuality from "./pages/blog/JpgToPngQuality";
-import HeicConversionGuide from "./pages/blog/HeicConversionGuide";
-import PdfCompressionExplained from "./pages/blog/PdfCompressionExplained";
-import BestImageTools2025 from "./pages/blog/BestImageTools2025";
-import ReducePdfForEmail from "./pages/blog/ReducePdfForEmail";
-import OnlineConverterSecurity from "./pages/blog/OnlineConverterSecurity";
-import WebpFormatGuide from "./pages/blog/WebpFormatGuide";
-import MergePdfsTutorial from "./pages/blog/MergePdfsTutorial";
-import ImageFormatsExplained from "./pages/blog/ImageFormatsExplained";
-import FixPdfTooLargeError from "./pages/blog/FixPdfTooLargeError";
+// Eager load - critical path
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+
+// Lazy load - tool pages (heavy PDF/image libraries)
+const PdfToImage = lazy(() => import("./pages/PdfToImage"));
+const JpgToPng = lazy(() => import("./pages/JpgToPng"));
+const PngToJpg = lazy(() => import("./pages/PngToJpg"));
+const ImageToPdf = lazy(() => import("./pages/ImageToPdf"));
+const MergePdf = lazy(() => import("./pages/MergePdf"));
+const CompressPdf = lazy(() => import("./pages/CompressPdf"));
+const WebpToJpg = lazy(() => import("./pages/WebpToJpg"));
+const HeicToJpg = lazy(() => import("./pages/HeicToJpg"));
+const SplitPdf = lazy(() => import("./pages/SplitPdf"));
+
+// Lazy load - static pages
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Contact = lazy(() => import("./pages/Contact"));
+const About = lazy(() => import("./pages/About"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+
+// Lazy load - blog pages
+const BlogIndex = lazy(() => import("./pages/blog/Index"));
+const JpgToPngQuality = lazy(() => import("./pages/blog/JpgToPngQuality"));
+const HeicConversionGuide = lazy(() => import("./pages/blog/HeicConversionGuide"));
+const PdfCompressionExplained = lazy(() => import("./pages/blog/PdfCompressionExplained"));
+const BestImageTools2025 = lazy(() => import("./pages/blog/BestImageTools2025"));
+const ReducePdfForEmail = lazy(() => import("./pages/blog/ReducePdfForEmail"));
+const OnlineConverterSecurity = lazy(() => import("./pages/blog/OnlineConverterSecurity"));
+const WebpFormatGuide = lazy(() => import("./pages/blog/WebpFormatGuide"));
+const MergePdfsTutorial = lazy(() => import("./pages/blog/MergePdfsTutorial"));
+const ImageFormatsExplained = lazy(() => import("./pages/blog/ImageFormatsExplained"));
+const FixPdfTooLargeError = lazy(() => import("./pages/blog/FixPdfTooLargeError"));
 
 const queryClient = new QueryClient();
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-pulse text-muted-foreground">Loading...</div>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -40,7 +54,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
@@ -71,7 +86,8 @@ const App = () => (
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

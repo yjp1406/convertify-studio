@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
@@ -8,7 +8,16 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Download, FileText, GripVertical } from "lucide-react";
 import { toast } from "sonner";
-import { PDFDocument } from "pdf-lib";
+
+// Lazy load PDF library
+let pdfLibLoaded: typeof import('pdf-lib') | null = null;
+
+const loadPdfLib = async () => {
+  if (!pdfLibLoaded) {
+    pdfLibLoaded = await import('pdf-lib');
+  }
+  return pdfLibLoaded;
+};
 
 interface ImageFile {
   name: string;
@@ -60,6 +69,7 @@ const ImageToPdf = () => {
   };
 
   const imageToPdfBytes = async (imageBlob: Blob): Promise<Uint8Array> => {
+    const { PDFDocument } = await loadPdfLib();
     const arrayBuffer = await imageBlob.arrayBuffer();
     const imageBytes = new Uint8Array(arrayBuffer);
     
@@ -91,6 +101,8 @@ const ImageToPdf = () => {
 
     setIsConverting(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
+      
       if (singlePdf) {
         // Combine all images into one PDF
         const pdfDoc = await PDFDocument.create();

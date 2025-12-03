@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
@@ -6,11 +6,25 @@ import WebAppSchema from "@/components/WebAppSchema";
 import { Button } from "@/components/ui/button";
 import { Download, X, GripVertical, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { PDFDocument } from "pdf-lib";
-import * as pdfjsLib from "pdfjs-dist";
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Lazy load PDF libraries
+let pdfLibLoaded: typeof import('pdf-lib') | null = null;
+let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+
+const loadPdfLib = async () => {
+  if (!pdfLibLoaded) {
+    pdfLibLoaded = await import('pdf-lib');
+  }
+  return pdfLibLoaded;
+};
+
+const loadPdfjs = async () => {
+  if (!pdfjsLoaded) {
+    pdfjsLoaded = await import('pdfjs-dist');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLoaded.version}/pdf.worker.min.js`;
+  }
+  return pdfjsLoaded;
+};
 
 interface PdfFile {
   name: string;
@@ -53,6 +67,7 @@ const MergePdf = () => {
 
   const generatePdfThumbnail = async (blob: Blob): Promise<string> => {
     try {
+      const pdfjsLib = await loadPdfjs();
       const arrayBuffer = await blob.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       const page = await pdf.getPage(1);
@@ -78,6 +93,7 @@ const MergePdf = () => {
 
   const handleFileSelect = async (fileBlob: Blob, fileName: string) => {
     try {
+      const { PDFDocument } = await loadPdfLib();
       const arrayBuffer = await fileBlob.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pageCount = pdfDoc.getPageCount();
@@ -141,6 +157,7 @@ const MergePdf = () => {
 
     setIsMerging(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const mergedPdf = await PDFDocument.create();
 
       for (const pdfFile of pdfFiles) {
