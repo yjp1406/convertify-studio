@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
@@ -6,13 +6,27 @@ import WebAppSchema from "@/components/WebAppSchema";
 import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { PDFDocument } from "pdf-lib";
 
-// ❗ FIXED: Correct imports for pdf.js (Vite compatible)
-import { GlobalWorkerOptions, getDocument } from "pdfjs-dist/legacy/build/pdf";
-import pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.min.js?url";
+// Lazy load PDF libraries
+let pdfLibLoaded: typeof import('pdf-lib') | null = null;
+let pdfjsLoaded: { getDocument: any; GlobalWorkerOptions: any } | null = null;
 
-GlobalWorkerOptions.workerSrc = pdfjsWorker;
+const loadPdfLib = async () => {
+  if (!pdfLibLoaded) {
+    pdfLibLoaded = await import('pdf-lib');
+  }
+  return pdfLibLoaded;
+};
+
+const loadPdfjs = async () => {
+  if (!pdfjsLoaded) {
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf');
+    const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.min.js?url');
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+    pdfjsLoaded = { getDocument: pdfjs.getDocument, GlobalWorkerOptions: pdfjs.GlobalWorkerOptions };
+  }
+  return pdfjsLoaded;
+};
 
 interface CompressionTarget {
   label: string;
@@ -117,11 +131,14 @@ const CompressPdf = () => {
     setIsCompressing(true);
 
     try {
+      // Lazy load libraries
+      const pdfjs = await loadPdfjs();
+      const { PDFDocument } = await loadPdfLib();
+      
       const arrayBuffer = await pdfFile.blob.arrayBuffer();
       const originalSize = pdfFile.size;
 
-      // ❗ FIXED: Correct getDocument import
-      const pdf = await getDocument({ data: arrayBuffer }).promise;
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       const pageCount = pdf.numPages;
 
       const compressionScale = compressionTargets[selectedTarget].scale;

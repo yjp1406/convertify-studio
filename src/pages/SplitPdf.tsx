@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
@@ -9,11 +9,25 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Download, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { PDFDocument } from "pdf-lib";
-import * as pdfjsLib from "pdfjs-dist";
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Lazy load PDF libraries
+let pdfLibLoaded: typeof import('pdf-lib') | null = null;
+let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+
+const loadPdfLib = async () => {
+  if (!pdfLibLoaded) {
+    pdfLibLoaded = await import('pdf-lib');
+  }
+  return pdfLibLoaded;
+};
+
+const loadPdfjs = async () => {
+  if (!pdfjsLoaded) {
+    pdfjsLoaded = await import('pdfjs-dist');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLoaded.version}/pdf.worker.min.js`;
+  }
+  return pdfjsLoaded;
+};
 
 interface PageInfo {
   pageNumber: number;
@@ -58,6 +72,7 @@ const SplitPdf = () => {
   const generateThumbnails = async (file: Blob) => {
     setIsGeneratingThumbnails(true);
     try {
+      const pdfjsLib = await loadPdfjs();
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       const pageCount = pdf.numPages;
@@ -183,6 +198,7 @@ const SplitPdf = () => {
 
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const arrayBuffer = await pdfFile.blob.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const newPdf = await PDFDocument.create();
