@@ -28,12 +28,35 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Send form data to Formspree
+      const response = await fetch("https://formspree.io/f/xpwzgqkd", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
 
-    toast.success("Message sent successfully! We'll get back to you within 24-48 hours.");
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    setIsSubmitting(false);
+      if (response.ok) {
+        toast.success("Message sent successfully! We'll get back to you within 24-48 hours.");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        throw new Error("Failed to send");
+      }
+    } catch (error) {
+      // Fallback: open email client
+      const mailtoLink = `mailto:yagneshjp1406@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\n${formData.message}`)}`;
+      window.location.href = mailtoLink;
+      toast.info("Opening your email client to send the message.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

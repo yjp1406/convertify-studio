@@ -1,17 +1,7 @@
 const AdTop = () => {
-  return (
-    <div className="w-full bg-muted/30 border border-border rounded-lg p-6 text-center">
-      <div className="text-sm text-muted-foreground mb-2">
-        Advertisement
-      </div>
-      <div className="h-[90px] flex items-center justify-center">
-        <div className="text-xs text-muted-foreground">
-          728 x 90 - Leaderboard Ad
-        </div>
-      </div>
-      {/* Paste Google AdSense code here */}
-    </div>
-  );
+  // Ad placeholder - will be replaced with actual AdSense code once approved
+  // Currently hidden to avoid showing placeholder text during AdSense review
+  return null;
 };
 
 export default AdTop;
