@@ -38,6 +38,7 @@ const WebpFormatGuide = lazy(() => import("./pages/blog/WebpFormatGuide"));
 const MergePdfsTutorial = lazy(() => import("./pages/blog/MergePdfsTutorial"));
 const ImageFormatsExplained = lazy(() => import("./pages/blog/ImageFormatsExplained"));
 const FixPdfTooLargeError = lazy(() => import("./pages/blog/FixPdfTooLargeError"));
+const FileFormatsGuide = lazy(() => import("./pages/blog/FileFormatsGuide"));
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const App = () => (
           <Route path="/blog/how-to-merge-pdfs" element={<MergePdfsTutorial />} />
           <Route path="/blog/image-formats-explained" element={<ImageFormatsExplained />} />
           <Route path="/blog/fix-pdf-too-large-error" element={<FixPdfTooLargeError />} />
+          <Route path="/blog/file-formats-guide" element={<FileFormatsGuide />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

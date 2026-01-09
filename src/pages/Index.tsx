@@ -168,10 +168,10 @@ const CTASection = memo(() => (
         Learn More About Us
       </Link>
       <Link 
-        to="/blog" 
+        to="/blog/file-formats-guide" 
         className="inline-flex items-center justify-center rounded-md border border-border px-6 py-3 text-sm font-medium hover:bg-muted transition-colors"
       >
-        Read Our Blog
+        Read Our Format Guide
       </Link>
     </div>
   </section>

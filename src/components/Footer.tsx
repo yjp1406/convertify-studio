@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Shield } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -29,12 +30,13 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Company */}
+        {/* Resources */}
         <div>
-          <h3 className="font-medium mb-3">Company</h3>
+          <h3 className="font-medium mb-3">Resources</h3>
           <ul className="space-y-2 text-muted-foreground">
             <li><Link to="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
             <li><Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
+            <li><Link to="/blog/file-formats-guide" className="hover:text-foreground transition-colors">Format Guide</Link></li>
             <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
           </ul>
         </div>
@@ -49,8 +51,21 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Convertify. All rights reserved.
+      {/* Trust Line */}
+      <div className="border-t py-4">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Shield className="h-4 w-4 text-primary" />
+              <span>
+                Convertify Studio is a privacy-first tool. Files are processed locally in your browser — nothing is uploaded to any server.
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} Convertify Studio. All rights reserved.
+            </p>
+          </div>
+        </div>
       </div>
     </footer>
   );
