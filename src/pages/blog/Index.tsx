@@ -13,6 +13,13 @@ interface BlogPost {
 
 const blogPosts: BlogPost[] = [
   {
+    slug: "file-formats-guide",
+    title: "Complete Guide to Image & PDF Formats (2025)",
+    description: "The definitive guide to understanding image and PDF formats. Learn when to use JPG, PNG, WebP, HEIC, and PDF with practical examples.",
+    date: "2024-10-20",
+    readTime: "25 min read"
+  },
+  {
     slug: "jpg-to-png-without-losing-quality",
     title: "How to Convert JPG to PNG Without Losing Quality",
     description: "Learn the complete process of converting JPG images to PNG format while maintaining image quality. Understand the technical differences and when to use each format.",

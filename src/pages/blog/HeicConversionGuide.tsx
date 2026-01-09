@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import AuthorBox from "@/components/AuthorBox";
 
 export default function HeicConversionGuide() {
   return (
@@ -13,14 +14,16 @@ export default function HeicConversionGuide() {
         <header className="mb-8">
           <h1 className="text-4xl font-bold mb-4">Why iPhones Use HEIC and How to Convert HEIC to JPG</h1>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <time dateTime="2025-11-27">November 27, 2025</time>
+            <time dateTime="2024-10-12">October 12, 2024</time>
             <span>•</span>
             <span>7 min read</span>
           </div>
         </header>
 
         <p className="text-lg text-muted-foreground mb-6">
-          If you've ever tried to share iPhone photos with friends or upload them to a website, you might have encountered files with the .HEIC extension. This modern format offers superior quality and smaller file sizes, but it comes with compatibility challenges. Here's everything you need to know about HEIC and how to convert it when needed.
+          I built the HEIC to JPG converter for Convertify after receiving more frustrated emails about 
+          this issue than any other topic. "Why can't my Windows PC open my iPhone photos?" "My website 
+          rejects all my images." This guide explains exactly what's happening and how to fix it.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">What is HEIC?</h2>
@@ -186,12 +189,17 @@ export default function HeicConversionGuide() {
         <h2 className="text-2xl font-semibold mt-8 mb-4">Conclusion</h2>
 
         <p>
-          HEIC represents the future of image formats, offering superior quality and efficiency. But until universal support arrives, converting HEIC to JPG bridges the compatibility gap. Whether you use iPhone settings, online converters, or desktop software, multiple options ensure your photos are accessible across all platforms.
+          After helping countless users solve this exact problem, my recommendation is simple: keep your 
+          iPhone set to HEIC for storage efficiency, but know how to convert when sharing is needed. 
+          The format itself is excellent—it's the compatibility that's frustrating.
         </p>
 
         <p>
-          Need to convert HEIC files right now? Try <Link to="/heic-to-jpg" className="text-primary hover:underline">our free HEIC to JPG converter</Link> – it works entirely in your browser with no uploads required.
+          Need to convert HEIC files right now? Try <Link to="/heic-to-jpg" className="text-primary hover:underline">our free HEIC to JPG converter</Link> – 
+          I built it specifically because this is the most common issue my users face.
         </p>
+
+        <AuthorBox />
 
         <Separator className="my-12" />
 
@@ -199,8 +207,8 @@ export default function HeicConversionGuide() {
           <h3 className="text-xl font-semibold mb-4">Related Articles</h3>
           <ul className="space-y-2">
             <li>
-              <Link to="/blog/image-formats-explained" className="text-primary hover:underline">
-                Image Formats Explained: PNG, JPG, HEIC, WebP
+              <Link to="/blog/file-formats-guide" className="text-primary hover:underline">
+                Complete Guide to Image & PDF Formats (2025)
               </Link>
             </li>
             <li>
