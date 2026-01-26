@@ -182,6 +182,7 @@ const tools = [
   { icon: FileImage, title: "Image to PDF", description: "Combine multiple images into a single PDF", path: "/image-to-pdf" },
   { icon: FileImage, title: "JPG to PNG", description: "Convert JPG images to PNG format", path: "/jpg-to-png" },
   { icon: FileImage, title: "PNG to JPG", description: "Convert PNG images to JPG format", path: "/png-to-jpg" },
+  { icon: ImageIcon, title: "Convert to WebP", description: "Convert JPG & PNG to WebP for smaller files", path: "/convert-to-webp" },
   { icon: ImageIcon, title: "WebP to JPG", description: "Convert WebP images to JPG format", path: "/webp-to-jpg" },
   { icon: ImageIcon, title: "HEIC to JPG", description: "Convert Apple HEIC photos to JPG", path: "/heic-to-jpg" },
   { icon: Combine, title: "Merge PDF", description: "Combine multiple PDFs into one file", path: "/merge-pdf" },

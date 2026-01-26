@@ -19,6 +19,7 @@ const CompressPdf = lazy(() => import("./pages/CompressPdf"));
 const WebpToJpg = lazy(() => import("./pages/WebpToJpg"));
 const HeicToJpg = lazy(() => import("./pages/HeicToJpg"));
 const SplitPdf = lazy(() => import("./pages/SplitPdf"));
+const ConvertToWebp = lazy(() => import("./pages/ConvertToWebp"));
 
 // Lazy load - static pages
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -71,6 +72,7 @@ const App = () => (
           <Route path="/webp-to-jpg" element={<WebpToJpg />} />
           <Route path="/heic-to-jpg" element={<HeicToJpg />} />
           <Route path="/split-pdf" element={<SplitPdf />} />
+          <Route path="/convert-to-webp" element={<ConvertToWebp />} />
           
           {/* Blog routes */}
           <Route path="/blog" element={<BlogIndex />} />
