@@ -134,6 +134,7 @@ const ConvertToWebp = () => {
             onFileSelect={handleFileSelect}
             acceptedTypes="images"
             maxSizeMB={20}
+            multiple={true}
           />
 
           {isConverting && (
