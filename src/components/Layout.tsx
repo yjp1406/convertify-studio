@@ -16,14 +16,12 @@ const Layout = memo(({ children, title, description, keywords, showSidebar = fal
     <>
       <SEOHead title={title} description={description} keywords={keywords} />
       <div className="min-h-screen bg-background">
-        <header className="w-full">
-          <Navbar />
-        </header>
+        <Navbar />
         
-        <main className="w-full px-4 py-8">
+        <main className="w-full px-4 sm:px-6 py-10">
           <div className="mx-auto max-w-7xl">
             <div className="flex gap-8 flex-col lg:flex-row">
-              <div className={`flex-1 ${showSidebar ? 'lg:max-w-3xl' : 'max-w-3xl mx-auto w-full'} space-y-8`}>
+              <div className={`flex-1 ${showSidebar ? 'lg:max-w-3xl' : 'max-w-4xl mx-auto w-full'} space-y-8`}>
                 <div className="space-y-6">
                   {children}
                 </div>
