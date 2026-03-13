@@ -4,9 +4,10 @@ import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
 import WebAppSchema from "@/components/WebAppSchema";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Trash2, Zap, Shield, Gauge, ArrowRight, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { convertImageFormat, downloadBlob } from "@/utils/imageConverter";
+import { Progress } from "@/components/ui/progress";
 
 interface ConvertedFile {
   name: string;
@@ -48,7 +49,6 @@ const ConvertToWebp = () => {
   ];
 
   const handleFileSelect = async (fileBlob: Blob, fileName: string) => {
-    // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!validTypes.includes(fileBlob.type)) {
       toast.error("Please upload a JPG or PNG file");
@@ -95,16 +95,27 @@ const ConvertToWebp = () => {
     setFiles([]);
   };
 
+  const handleRemoveFile = (index: number) => {
+    setFiles(prev => {
+      const updated = [...prev];
+      URL.revokeObjectURL(updated[index].preview);
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
+
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
   };
 
-  const calculateSavings = (original: number, converted: number): string => {
-    const savings = ((1 - converted / original) * 100).toFixed(1);
-    return savings;
+  const getSavingsPercent = (original: number, converted: number): number => {
+    return Math.round((1 - converted / original) * 100);
   };
+
+  const totalOriginal = files.reduce((sum, f) => sum + f.originalSize, 0);
+  const totalConverted = files.reduce((sum, f) => sum + f.convertedSize, 0);
 
   return (
     <>
@@ -120,16 +131,22 @@ const ConvertToWebp = () => {
         keywords="jpg to webp, png to webp, convert to webp, webp converter, image compression, webp format"
         showSidebar={true}
       >
-        <div className="space-y-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Convert to WebP
+        <div className="space-y-10">
+          {/* Hero Header */}
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+              <Zap className="h-3.5 w-3.5" />
+              Free & Instant Conversion
+            </div>
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
+              Convert to <span className="text-primary">WebP</span>
             </h1>
-            <p className="text-muted-foreground">
-              Convert JPG and PNG images to WebP for smaller file sizes and faster loading
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Transform JPG & PNG images into WebP — up to 35% smaller with the same visual quality.
             </p>
           </div>
 
+          {/* Upload Area */}
           <FileDropZone
             onFileSelect={handleFileSelect}
             acceptedTypes="images"
@@ -137,68 +154,138 @@ const ConvertToWebp = () => {
             multiple={true}
           />
 
+          {/* Converting Indicator */}
           {isConverting && (
-            <div className="text-center text-muted-foreground">
-              Converting image...
+            <div className="flex items-center justify-center gap-3 py-4">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span className="text-sm font-medium text-muted-foreground">Converting image...</span>
             </div>
           )}
 
+          {/* Results Section */}
           {files.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-foreground">
-                  Converted Images ({files.length})
-                </h2>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleClear}>
-                    Clear All
-                  </Button>
-                  {files.length > 1 && (
-                    <Button onClick={handleDownloadAll}>
-                      Download All
+            <div className="space-y-6">
+              {/* Summary Bar */}
+              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                      <CheckCircle2 className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {files.length} file{files.length > 1 ? 's' : ''} converted
+                      </p>
+                      <p className="text-lg font-bold text-foreground">
+                        Saved {formatFileSize(totalOriginal - totalConverted)}
+                        <span className="ml-2 text-sm font-medium text-primary">
+                          ({getSavingsPercent(totalOriginal, totalConverted)}% smaller)
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleClear} className="gap-1.5">
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Clear
                     </Button>
-                  )}
+                    {files.length > 1 && (
+                      <Button size="sm" onClick={handleDownloadAll} className="gap-1.5">
+                        <Download className="h-3.5 w-3.5" />
+                        Download All
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid gap-4">
-                {files.map((file, index) => (
-                  <div key={index} className="rounded-lg border border-border bg-card p-4">
-                    <div className="flex gap-4 items-start">
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                        <img 
-                          src={file.preview} 
-                          alt={file.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-foreground truncate mb-2">
-                          {file.name}
-                        </h3>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>Original: {formatFileSize(file.originalSize)}</p>
-                          <p>WebP: {formatFileSize(file.convertedSize)}</p>
-                          <p className="text-green-600 dark:text-green-400 font-medium">
-                            Saved: {calculateSavings(file.originalSize, file.convertedSize)}%
-                          </p>
+              {/* File Cards */}
+              <div className="grid gap-3">
+                {files.map((file, index) => {
+                  const savingsPercent = getSavingsPercent(file.originalSize, file.convertedSize);
+                  return (
+                    <div
+                      key={index}
+                      className="group rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+                    >
+                      <div className="flex gap-4 items-center">
+                        {/* Thumbnail */}
+                        <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted ring-1 ring-border">
+                          <img
+                            src={file.preview}
+                            alt={file.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-semibold text-foreground truncate">
+                              {file.name}
+                            </h3>
+                            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary flex-shrink-0">
+                              -{savingsPercent}%
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{formatFileSize(file.originalSize)}</span>
+                            <ArrowRight className="h-3 w-3 text-primary" />
+                            <span className="font-medium text-foreground">{formatFileSize(file.convertedSize)}</span>
+                          </div>
+                          <Progress value={100 - savingsPercent} className="h-1.5" />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleRemoveFile(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" onClick={() => handleDownload(file)} className="gap-1.5">
+                            <Download className="h-3.5 w-3.5" />
+                            Save
+                          </Button>
                         </div>
                       </div>
-                      <Button onClick={() => handleDownload(file)} className="flex-shrink-0">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </Button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
-          <article className="prose prose-sm max-w-none space-y-6 text-foreground">
+          {/* Feature Pills */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { icon: Zap, title: "Lightning Fast", desc: "Instant in-browser conversion" },
+              { icon: Shield, title: "100% Private", desc: "Files never leave your device" },
+              { icon: Gauge, title: "Max Quality", desc: "Optimized compression settings" },
+            ].map((feature) => (
+              <div
+                key={feature.title}
+                className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                  <feature.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{feature.title}</p>
+                  <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Content Article */}
+          <article className="prose prose-sm max-w-none space-y-8 text-foreground">
             <section>
               <h2 className="text-2xl font-bold mb-4">Convert JPG & PNG to WebP: Smaller Files, Same Quality</h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground leading-relaxed">
                 WebP is a modern image format developed by Google that delivers superior compression compared to traditional formats like JPG and PNG. 
                 Our free online converter transforms your JPG and PNG images into WebP format, typically reducing file sizes by 25-35% while maintaining 
                 excellent visual quality. Unlike other converters that require uploading your files to a server, our tool processes everything locally 
@@ -209,8 +296,7 @@ const ConvertToWebp = () => {
             <section>
               <h2 className="text-xl font-semibold mb-3">Why Convert to WebP?</h2>
               <p className="text-muted-foreground mb-4">
-                WebP offers the best of both worlds: the compression efficiency of JPG and the transparency support of PNG. Here are key reasons 
-                to convert your images to WebP:
+                WebP offers the best of both worlds: the compression efficiency of JPG and the transparency support of PNG.
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li><strong>Smaller File Sizes:</strong> WebP images are typically 25-35% smaller than JPG and PNG at equivalent quality.</li>
@@ -223,9 +309,6 @@ const ConvertToWebp = () => {
 
             <section>
               <h2 className="text-xl font-semibold mb-3">How to Use Our WebP Converter</h2>
-              <p className="text-muted-foreground mb-4">
-                Converting your JPG or PNG images to WebP format is incredibly simple:
-              </p>
               <ol className="list-decimal pl-6 space-y-2 text-muted-foreground">
                 <li><strong>Upload Your Image:</strong> Click the upload area or drag and drop your JPG or PNG file.</li>
                 <li><strong>Automatic Conversion:</strong> The tool instantly converts your image to WebP format.</li>
@@ -236,29 +319,23 @@ const ConvertToWebp = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">WebP vs JPG vs PNG: Understanding the Differences</h2>
-              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">JPG (JPEG):</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Best for photographs with complex colors. Uses lossy compression. Doesn't support transparency. 
-                    Files are larger than WebP at equivalent quality.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">PNG:</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Best for graphics, logos, and images requiring transparency. Uses lossless compression. 
-                    Files are significantly larger than WebP, especially for photographs.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">WebP:</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Best for web use. Supports both lossy and lossless compression plus transparency. 
-                    Produces the smallest files while maintaining quality. Supported by all modern browsers.
-                  </p>
-                </div>
+              <h2 className="text-xl font-semibold mb-3">WebP vs JPG vs PNG</h2>
+              <div className="grid gap-3 not-prose">
+                {[
+                  { label: "JPG", color: "bg-accent", desc: "Best for photographs. Lossy compression. No transparency. Larger than WebP." },
+                  { label: "PNG", color: "bg-accent", desc: "Best for graphics & logos. Lossless compression. Supports transparency. Much larger files." },
+                  { label: "WebP", color: "bg-primary/10", desc: "Best for web. Lossy + lossless. Supports transparency. Smallest file sizes." },
+                ].map((fmt) => (
+                  <div key={fmt.label} className={`rounded-xl ${fmt.color} p-4 flex items-start gap-3`}>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm flex-shrink-0">
+                      <ImageIcon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground text-sm">{fmt.label}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{fmt.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -289,12 +366,17 @@ const ConvertToWebp = () => {
 
             <section>
               <h2 className="text-xl font-semibold mb-3">Frequently Asked Questions</h2>
-              <div className="space-y-4">
+              <div className="space-y-3 not-prose">
                 {faqs.map((faq, index) => (
-                  <div key={index} className="bg-muted/30 rounded-lg p-4">
-                    <h3 className="font-semibold text-foreground mb-2">{faq.question}</h3>
-                    <p className="text-sm text-muted-foreground">{faq.answer}</p>
-                  </div>
+                  <details key={index} className="group rounded-xl border border-border bg-card shadow-sm">
+                    <summary className="flex cursor-pointer items-center justify-between p-4 text-sm font-semibold text-foreground">
+                      {faq.question}
+                      <span className="ml-2 text-muted-foreground transition-transform group-open:rotate-45">+</span>
+                    </summary>
+                    <div className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">
+                      {faq.answer}
+                    </div>
+                  </details>
                 ))}
               </div>
             </section>
