@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, File, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Upload, CloudUpload } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileDropZoneProps {
@@ -24,109 +23,60 @@ const FileDropZone = ({
 
   const getAcceptString = () => {
     switch (acceptedTypes) {
-      case "images":
-        return "image/jpeg,image/png,image/gif,image/webp";
-      case "pdf":
-        return "application/pdf";
-      case "both":
-        return "image/jpeg,image/png,image/gif,image/webp,application/pdf";
-      default:
-        return "";
+      case "images": return "image/jpeg,image/png,image/gif,image/webp";
+      case "pdf": return "application/pdf";
+      case "both": return "image/jpeg,image/png,image/gif,image/webp,application/pdf";
+      default: return "";
     }
   };
 
   const getAcceptedTypesLabel = () => {
     switch (acceptedTypes) {
-      case "images":
-        return "JPG, PNG, GIF, WebP";
-      case "pdf":
-        return "PDF";
-      case "both":
-        return "Images (JPG, PNG, GIF, WebP) or PDF";
-      default:
-        return "";
+      case "images": return "JPG, PNG, GIF, WebP";
+      case "pdf": return "PDF";
+      case "both": return "Images (JPG, PNG, GIF, WebP) or PDF";
+      default: return "";
     }
   };
 
   const validateFile = (file: File): boolean => {
     setError("");
-
-    // Check file size
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > maxSizeMB) {
       setError(`File size must be less than ${maxSizeMB}MB`);
       return false;
     }
-
-    // Check file type
     const acceptedMimeTypes = getAcceptString().split(",");
     if (!acceptedMimeTypes.includes(file.type)) {
       setError(`Please select a valid file type: ${getAcceptedTypesLabel()}`);
       return false;
     }
-
     return true;
   };
 
   const handleFiles = useCallback((files: FileList) => {
     setError("");
-    let hasError = false;
-    
     Array.from(files).forEach((file) => {
       if (validateFile(file)) {
         onFileSelect(file, file.name);
-      } else {
-        hasError = true;
       }
     });
-    
-    // Clear the input so the same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   }, [onFileSelect, maxSizeMB, acceptedTypes]);
 
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
+  const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
+    e.preventDefault(); e.stopPropagation(); setIsDragging(false);
     const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      handleFiles(files);
-    }
+    if (files && files.length > 0) handleFiles(files);
   };
-
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFiles(files);
-    }
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+    if (files && files.length > 0) handleFiles(files);
   };
 
   return (
@@ -139,7 +89,6 @@ const FileDropZone = ({
         className="hidden"
         multiple={multiple}
       />
-
       <div
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -147,39 +96,36 @@ const FileDropZone = ({
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={cn(
-          "relative cursor-pointer rounded-lg border-2 border-dashed transition-all",
-          "flex flex-col items-center justify-center p-12",
-          "hover:border-primary hover:bg-primary/5",
+          "relative cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-300",
+          "flex flex-col items-center justify-center py-14 px-8",
           isDragging
-            ? "border-primary bg-primary/10"
-            : "border-border bg-card",
+            ? "border-primary bg-primary/5 shadow-[var(--shadow-glow)]"
+            : "border-border hover:border-primary/50 hover:bg-muted/30",
           error && "border-destructive"
         )}
       >
-        <Upload
-          className={cn(
-            "mb-4 h-12 w-12 transition-colors",
+        <div className={cn(
+          "mb-4 flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300",
+          isDragging ? "bg-primary/15 scale-110" : "bg-muted"
+        )}>
+          <CloudUpload className={cn(
+            "h-8 w-8 transition-colors",
             isDragging ? "text-primary" : "text-muted-foreground"
-          )}
-        />
-        <h3 className="mb-2 text-lg font-semibold text-foreground">
-          {isDragging 
-            ? multiple ? "Drop your files here" : "Drop your file here"
-            : multiple ? "Drop files or click to browse" : "Drop file or click to browse"
+          )} />
+        </div>
+        <h3 className="mb-1.5 text-base font-semibold text-foreground">
+          {isDragging
+            ? (multiple ? "Drop your files here" : "Drop your file here")
+            : (multiple ? "Drop files or click to browse" : "Drop file or click to browse")
           }
         </h3>
         <p className="text-sm text-muted-foreground">
-          Accepts: {getAcceptedTypesLabel()}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Maximum file size: {maxSizeMB}MB {multiple && "per file"}
+          {getAcceptedTypesLabel()} · Max {maxSizeMB}MB {multiple && "per file"}
         </p>
       </div>
 
       {error && (
-        <p className="mt-2 text-sm text-destructive">
-          {error}
-        </p>
+        <p className="mt-2 text-sm text-destructive">{error}</p>
       )}
     </div>
   );
