@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 // Lazy load PDF libraries
 let pdfLibLoaded: typeof import('pdf-lib') | null = null;
-let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+let pdfjsLoaded: { getDocument: any; GlobalWorkerOptions: any } | null = null;
 
 const loadPdfLib = async () => {
   if (!pdfLibLoaded) {
@@ -23,9 +23,13 @@ const loadPdfLib = async () => {
 
 const loadPdfjs = async () => {
   if (!pdfjsLoaded) {
-    pdfjsLoaded = await import('pdfjs-dist');
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf');
     const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.min.js?url');
-    pdfjsLoaded.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+    pdfjsLoaded = {
+      getDocument: pdfjs.getDocument,
+      GlobalWorkerOptions: pdfjs.GlobalWorkerOptions,
+    };
   }
   return pdfjsLoaded;
 };
