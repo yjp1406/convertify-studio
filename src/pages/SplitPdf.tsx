@@ -23,9 +23,13 @@ const loadPdfLib = async () => {
 
 const loadPdfjs = async () => {
   if (!pdfjsLoaded) {
-    pdfjsLoaded = await import('pdfjs-dist');
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf');
     const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.min.js?url');
-    pdfjsLoaded.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+    pdfjsLoaded = {
+      getDocument: pdfjs.getDocument,
+      GlobalWorkerOptions: pdfjs.GlobalWorkerOptions,
+    };
   }
   return pdfjsLoaded;
 };
