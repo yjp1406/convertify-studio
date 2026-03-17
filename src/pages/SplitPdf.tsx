@@ -205,7 +205,14 @@ const SplitPdf = () => {
     try {
       const { PDFDocument } = await loadPdfLib();
       const arrayBuffer = await pdfFile.blob.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const pdfDoc = await PDFDocument.load(arrayBuffer).catch(async (error: unknown) => {
+        const message = error instanceof Error ? error.message.toLowerCase() : "";
+        if (message.includes("encrypted")) {
+          toast.info("Encrypted PDF detected — processing with compatibility mode");
+          return PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+        }
+        throw error;
+      });
       const newPdf = await PDFDocument.create();
 
       // Copy selected pages (pdf-lib uses 0-based indexing)
