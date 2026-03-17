@@ -189,13 +189,87 @@ const SplitPdf = () => {
     }
   };
 
+  const shouldUseCompatibilityFallback = (error: unknown) => {
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    return (
+      message.includes("encrypted") ||
+      message.includes("invalid object") ||
+      message.includes("input document")
+    );
+  };
+
+  const splitWithPdfLib = async (arrayBuffer: ArrayBuffer, selectedPages: number[]) => {
+    const { PDFDocument } = await loadPdfLib();
+
+    let sourcePdf;
+    try {
+      sourcePdf = await PDFDocument.load(arrayBuffer);
+    } catch (error) {
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (!message.includes("encrypted")) {
+        throw error;
+      }
+      sourcePdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+    }
+
+    const newPdf = await PDFDocument.create();
+    const copiedPages = await newPdf.copyPages(
+      sourcePdf,
+      selectedPages.map((pageNumber) => pageNumber - 1)
+    );
+
+    copiedPages.forEach((page) => {
+      newPdf.addPage(page);
+    });
+
+    return newPdf.save();
+  };
+
+  const splitWithRenderedPages = async (arrayBuffer: ArrayBuffer, selectedPages: number[]) => {
+    const pdfjsLib = await loadPdfjs();
+    const { PDFDocument } = await loadPdfLib();
+    const sourcePdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const outputPdf = await PDFDocument.create();
+
+    for (const pageNumber of selectedPages) {
+      const page = await sourcePdf.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        throw new Error("Canvas rendering is unavailable");
+      }
+
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+
+      await page.render({
+        canvasContext: context,
+        viewport,
+      }).promise;
+
+      const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      const image = await outputPdf.embedJpg(jpegDataUrl);
+      const outputPage = outputPdf.addPage([viewport.width, viewport.height]);
+      outputPage.drawImage(image, {
+        x: 0,
+        y: 0,
+        width: viewport.width,
+        height: viewport.height,
+      });
+    }
+
+    return outputPdf.save();
+  };
+
   const handleSplit = async () => {
     if (!pdfFile) {
       toast.error("Please upload a PDF file");
       return;
     }
 
-    const selectedPages = pages.filter(p => p.selected).map(p => p.pageNumber);
+    const selectedPages = pages.filter((p) => p.selected).map((p) => p.pageNumber);
     if (selectedPages.length === 0) {
       toast.error("Please select at least one page");
       return;
@@ -203,34 +277,25 @@ const SplitPdf = () => {
 
     setIsProcessing(true);
     try {
-      const { PDFDocument } = await loadPdfLib();
       const arrayBuffer = await pdfFile.blob.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer).catch(async (error: unknown) => {
-        const message = error instanceof Error ? error.message.toLowerCase() : "";
-        if (message.includes("encrypted")) {
-          toast.info("Encrypted PDF detected — processing with compatibility mode");
-          return PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+      let pdfBytes: Uint8Array;
+
+      try {
+        pdfBytes = await splitWithPdfLib(arrayBuffer, selectedPages);
+      } catch (error) {
+        if (!shouldUseCompatibilityFallback(error)) {
+          throw error;
         }
-        throw error;
-      });
-      const newPdf = await PDFDocument.create();
 
-      // Copy selected pages (pdf-lib uses 0-based indexing)
-      const copiedPages = await newPdf.copyPages(
-        pdfDoc,
-        selectedPages.map(p => p - 1)
-      );
+        toast.info("Protected PDF detected — using compatibility fallback");
+        pdfBytes = await splitWithRenderedPages(arrayBuffer, selectedPages);
+      }
 
-      copiedPages.forEach(page => {
-        newPdf.addPage(page);
-      });
-
-      const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as any], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = pdfFile.name.replace('.pdf', `_pages_${selectedPages.join('-')}.pdf`);
+      a.download = pdfFile.name.replace(/\.pdf$/i, `_pages_${selectedPages.join("-")}.pdf`);
       a.click();
       URL.revokeObjectURL(url);
 
