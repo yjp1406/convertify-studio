@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 // Lazy load PDF libraries
 let pdfLibLoaded: typeof import('pdf-lib') | null = null;
-let pdfjsLoaded: typeof import('pdfjs-dist') | null = null;
+let pdfjsLoaded: { getDocument: any; GlobalWorkerOptions: any } | null = null;
 
 const loadPdfLib = async () => {
   if (!pdfLibLoaded) {
