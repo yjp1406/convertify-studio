@@ -24,7 +24,8 @@ const loadPdfLib = async () => {
 const loadPdfjs = async () => {
   if (!pdfjsLoaded) {
     pdfjsLoaded = await import('pdfjs-dist');
-    pdfjsLoaded.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLoaded.version}/pdf.worker.min.js`;
+    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.mjs?url');
+    pdfjsLoaded.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
   }
   return pdfjsLoaded;
 };
