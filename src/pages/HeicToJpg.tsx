@@ -1,19 +1,29 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Layout from "@/components/Layout";
 import FileDropZone from "@/components/FileDropZone";
 import FAQSchema from "@/components/FAQSchema";
 import WebAppSchema from "@/components/WebAppSchema";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { Download, AlertCircle } from "lucide-react";
+import { Download, AlertCircle, Trash2, Archive } from "lucide-react";
 import { toast } from "sonner";
 import heic2any from "heic2any";
+import JSZip from "jszip";
+
+interface ConvertedFile {
+  id: string;
+  originalName: string;
+  originalSize: number;
+  convertedBlob: Blob;
+  convertedUrl: string;
+  convertedSize: number;
+}
 
 const HeicToJpg = () => {
-  const [originalImage, setOriginalImage] = useState<{ name: string; size: number } | null>(null);
-  const [convertedImage, setConvertedImage] = useState<{ url: string; blob: Blob } | null>(null);
+  const [convertedFiles, setConvertedFiles] = useState<ConvertedFile[]>([]);
   const [isConverting, setIsConverting] = useState(false);
-  const [conversionError, setConversionError] = useState<string | null>(null);
+  const [convertingCount, setConvertingCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   const faqs = [
     {
@@ -37,63 +47,101 @@ const HeicToJpg = () => {
       answer: "No, all conversions happen entirely in your browser using client-side JavaScript. Your photos never leave your device, ensuring complete privacy and security."
     },
     {
-      question: "My browser says it doesn't support HEIC. What should I do?",
-      answer: "HEIC conversion requires modern browser features. Try using the latest version of Chrome, Firefox, or Edge. Safari has the best HEIC support. If issues persist, you may need to convert using a desktop application."
+      question: "Can I convert multiple HEIC files at once?",
+      answer: "Yes! You can upload multiple HEIC files at once and convert them all in one go. You can then download them individually or as a ZIP file."
     }
   ];
 
-  const handleFileSelect = async (fileBlob: Blob, fileName: string) => {
-    const fileType = fileBlob.type.toLowerCase();
+  const handleFileSelect = useCallback(async (fileBlob: Blob, fileName: string) => {
     const fileExt = fileName.toLowerCase();
-    
-    if (!fileType.includes('heic') && !fileType.includes('heif') && 
+
+    if (!fileBlob.type.includes('heic') && !fileBlob.type.includes('heif') &&
         !fileExt.endsWith('.heic') && !fileExt.endsWith('.heif')) {
       toast.error("Please select a HEIC or HEIF file");
       return;
     }
 
-    setOriginalImage({ name: fileName, size: fileBlob.size });
-    setConvertedImage(null);
-    setConversionError(null);
     setIsConverting(true);
+    setConvertingCount(prev => prev + 1);
+    setTotalCount(prev => prev + 1);
 
     try {
-      // Convert HEIC to JPG using heic2any
       const convertedBlob = await heic2any({
         blob: fileBlob,
         toType: 'image/jpeg',
         quality: 0.95
       });
 
-      // heic2any may return Blob or Blob[]
       const resultBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-      
       const url = URL.createObjectURL(resultBlob);
-      setConvertedImage({ url, blob: resultBlob });
-      toast.success("HEIC converted to JPG successfully!");
+      const jpgName = fileName.replace(/\.(heic|heif)$/i, '.jpg');
+
+      setConvertedFiles(prev => [...prev, {
+        id: crypto.randomUUID(),
+        originalName: fileName,
+        originalSize: fileBlob.size,
+        convertedBlob: resultBlob,
+        convertedUrl: url,
+        convertedSize: resultBlob.size
+      }]);
+
+      toast.success(`Converted ${jpgName}`);
     } catch (error: any) {
       console.error('Conversion error:', error);
-      const errorMessage = error?.message || "Failed to convert HEIC file";
-      setConversionError(errorMessage);
-      
-      if (errorMessage.includes('not supported') || errorMessage.includes('HEIC')) {
-        toast.error("Your browser doesn't support HEIC conversion. Try using Chrome or Safari.");
+      const msg = error?.message || "";
+      if (msg.includes('not supported') || msg.includes('HEIC')) {
+        toast.error(`Failed to convert ${fileName}: browser doesn't support HEIC conversion.`);
       } else {
-        toast.error("Conversion failed. The file may be corrupted or incompatible.");
+        toast.error(`Failed to convert ${fileName}. File may be corrupted.`);
       }
     } finally {
-      setIsConverting(false);
+      setConvertingCount(prev => {
+        const next = prev - 1;
+        if (next <= 0) setIsConverting(false);
+        return next;
+      });
     }
+  }, []);
+
+  const handleDownloadSingle = (file: ConvertedFile) => {
+    const a = document.createElement('a');
+    a.href = file.convertedUrl;
+    a.download = file.originalName.replace(/\.(heic|heif)$/i, '.jpg');
+    a.click();
   };
 
-  const handleDownload = () => {
-    if (!convertedImage || !originalImage) return;
+  const handleDownloadZip = async () => {
+    if (convertedFiles.length === 0) return;
+    toast.info("Creating ZIP file...");
 
+    const zip = new JSZip();
+    convertedFiles.forEach(file => {
+      const jpgName = file.originalName.replace(/\.(heic|heif)$/i, '.jpg');
+      zip.file(jpgName, file.convertedBlob);
+    });
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
     const a = document.createElement('a');
-    a.href = convertedImage.url;
-    a.download = originalImage.name.replace(/\.(heic|heif)$/i, '.jpg');
+    a.href = url;
+    a.download = 'converted-images.zip';
     a.click();
-    toast.success("JPG downloaded!");
+    URL.revokeObjectURL(url);
+    toast.success("ZIP downloaded!");
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setConvertedFiles(prev => {
+      const file = prev.find(f => f.id === id);
+      if (file) URL.revokeObjectURL(file.convertedUrl);
+      return prev.filter(f => f.id !== id);
+    });
+  };
+
+  const handleClearAll = () => {
+    convertedFiles.forEach(f => URL.revokeObjectURL(f.convertedUrl));
+    setConvertedFiles([]);
+    setTotalCount(0);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -129,7 +177,7 @@ const HeicToJpg = () => {
               HEIC to JPG Converter
             </h1>
             <p className="text-muted-foreground">
-              Convert Apple HEIC photos to universally compatible JPG format
+              Convert Apple HEIC photos to universally compatible JPG format — multiple files supported
             </p>
           </div>
 
@@ -138,7 +186,7 @@ const HeicToJpg = () => {
               <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-900 dark:text-blue-100">
                 <p className="font-semibold mb-1">Browser Compatibility Note</p>
-                <p>HEIC conversion works best in Chrome, Firefox, Edge, and Safari. If you encounter issues, try a different browser or update to the latest version.</p>
+                <p>HEIC conversion works best in Chrome, Firefox, Edge, and Safari. Upload multiple files at once for batch conversion.</p>
               </div>
             </div>
           </div>
@@ -147,54 +195,68 @@ const HeicToJpg = () => {
             onFileSelect={handleFileSelect}
             acceptedTypes="images"
             maxSizeMB={50}
+            multiple={true}
           />
 
           {isConverting && (
-            <div className="text-center py-8">
+            <div className="text-center py-6">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="text-muted-foreground mt-4">Converting HEIC to JPG...</p>
-              <p className="text-sm text-muted-foreground mt-2">This may take a moment for large files</p>
+              <p className="text-muted-foreground mt-3">Converting files... ({convertingCount} remaining)</p>
             </div>
           )}
 
-          {conversionError && (
-            <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
-              <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-semibold text-destructive mb-1">Conversion Failed</p>
-                  <p className="text-muted-foreground">{conversionError}</p>
+          {convertedFiles.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Converted Files ({convertedFiles.length})
+                </h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleClearAll}>
+                    <Trash2 className="h-4 w-4 mr-1.5" />
+                    Clear All
+                  </Button>
+                  {convertedFiles.length >= 2 && (
+                    <Button size="sm" onClick={handleDownloadZip}>
+                      <Archive className="h-4 w-4 mr-1.5" />
+                      Download ZIP
+                    </Button>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
 
-          {originalImage && convertedImage && (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-foreground mb-3">Conversion Complete</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Original (HEIC)</p>
-                      <p className="font-medium text-foreground">{formatFileSize(originalImage.size)}</p>
+              <div className="grid gap-3">
+                {convertedFiles.map(file => (
+                  <div key={file.id} className="flex items-center gap-4 bg-card border border-border rounded-lg p-3">
+                    <img
+                      src={file.convertedUrl}
+                      alt={file.originalName}
+                      className="h-14 w-14 rounded-md object-cover flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {file.originalName.replace(/\.(heic|heif)$/i, '.jpg')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(file.originalSize)} → {formatFileSize(file.convertedSize)}
+                      </p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Converted (JPG)</p>
-                      <p className="font-medium text-foreground">{formatFileSize(convertedImage.blob.size)}</p>
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      <Button variant="ghost" size="icon" onClick={() => handleDownloadSingle(file)} title="Download">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveFile(file.id)} title="Remove">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
-                </div>
-
-                <div className="border border-border rounded-lg overflow-hidden bg-card">
-                  <img src={convertedImage.url} alt="Converted" className="w-full h-auto" />
-                </div>
+                ))}
               </div>
 
-              <div className="flex justify-center">
-                <Button onClick={handleDownload} size="lg">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download JPG
+              <div className="flex justify-center pt-2">
+                <Button size="lg" onClick={handleDownloadZip}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Download All as ZIP
                 </Button>
               </div>
             </div>
@@ -218,98 +280,17 @@ const HeicToJpg = () => {
                 <li><strong>Sharing Made Easy:</strong> Recipients can view JPG files without special software or codecs.</li>
                 <li><strong>Professional Use:</strong> Many professional tools and workflows require JPG format.</li>
                 <li><strong>Web Publishing:</strong> JPG is the standard format for website images and online galleries.</li>
-                <li><strong>Printing Services:</strong> Print shops typically require JPG or PNG formats.</li>
-                <li><strong>Email Attachments:</strong> Ensure recipients can view photos regardless of their device or email client.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold mb-3">How to Convert HEIC to JPG</h2>
               <ol className="list-decimal pl-6 space-y-2 text-muted-foreground">
-                <li><strong>Upload HEIC File:</strong> Click the upload area or drag and drop your HEIC or HEIF file.</li>
-                <li><strong>Automatic Processing:</strong> The tool converts your image using advanced browser-based libraries.</li>
-                <li><strong>Wait for Conversion:</strong> Large files may take a few moments to process completely.</li>
-                <li><strong>Preview Result:</strong> View the converted JPG image and check file size.</li>
-                <li><strong>Download JPG:</strong> Click the download button to save your converted image.</li>
-                <li><strong>Convert More:</strong> Upload another HEIC file to convert additional photos.</li>
+                <li><strong>Upload HEIC Files:</strong> Click the upload area or drag and drop one or more HEIC/HEIF files.</li>
+                <li><strong>Automatic Processing:</strong> Each file is converted automatically in your browser.</li>
+                <li><strong>Preview Results:</strong> View thumbnails and file sizes for all converted images.</li>
+                <li><strong>Download:</strong> Download files individually or all at once as a ZIP archive.</li>
               </ol>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Understanding HEIC Format</h2>
-              <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">What is HEIC?</h3>
-                  <p className="text-sm text-muted-foreground">
-                    HEIC uses HEVC (High Efficiency Video Coding) compression to create smaller files with better quality than JPG. 
-                    Apple adopted it as the default format for iPhone and iPad photos, reducing storage usage while maintaining quality.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground mb-2">HEIC vs JPG</h3>
-                  <p className="text-sm text-muted-foreground">
-                    HEIC files are typically 50% smaller than equivalent JPG files at the same quality level. However, JPG has universal 
-                    support across all platforms and devices, making it more practical for sharing and compatibility.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Key Features</h2>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li><strong>Browser-Based Conversion:</strong> No software installation required, works directly in your web browser.</li>
-                <li><strong>Complete Privacy:</strong> All conversion happens locally on your device, files never uploaded to servers.</li>
-                <li><strong>High Quality Output:</strong> Maintains photo quality with optimized JPG compression settings.</li>
-                <li><strong>Free and Unlimited:</strong> Convert as many HEIC files as you need without restrictions or fees.</li>
-                <li><strong>File Size Preview:</strong> See both original and converted file sizes before downloading.</li>
-                <li><strong>Fast Processing:</strong> Most conversions complete in seconds, even for large images.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Common Use Cases</h2>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li><strong>iPhone Photos:</strong> Convert iPhone photos for use on Windows PCs or Android devices.</li>
-                <li><strong>Social Media:</strong> Prepare photos for platforms that don't fully support HEIC format.</li>
-                <li><strong>Photo Editing:</strong> Convert before importing into editing software that doesn't support HEIC.</li>
-                <li><strong>Website Upload:</strong> Convert for website galleries and content management systems.</li>
-                <li><strong>Email Sharing:</strong> Ensure recipients can view your photos in any email client.</li>
-                <li><strong>Professional Printing:</strong> Convert for print services that require JPG format.</li>
-                <li><strong>Archive Conversion:</strong> Convert entire photo libraries for maximum compatibility.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Tips for Best Results</h2>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li><strong>Use Modern Browser:</strong> Chrome, Firefox, Edge, and Safari provide the best HEIC conversion support.</li>
-                <li><strong>Check File Size:</strong> Compare original and converted sizes - JPG may be larger in some cases.</li>
-                <li><strong>Keep Originals:</strong> Always retain original HEIC files as backup for highest quality.</li>
-                <li><strong>Batch Export on iPhone:</strong> For multiple files, use iPhone's built-in export as JPG feature.</li>
-                <li><strong>Quality Check:</strong> Preview converted images to ensure quality meets your needs.</li>
-                <li><strong>Large Files:</strong> Be patient with large HEIC files - conversion may take up to a minute.</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-semibold mb-3">Troubleshooting</h2>
-              <div className="space-y-3">
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <h3 className="font-semibold text-foreground mb-2">Conversion Failed Error</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Try using a different browser (Chrome or Safari recommended). Ensure your browser is updated to the latest version. 
-                    Some older browsers don't support the required conversion libraries.
-                  </p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <h3 className="font-semibold text-foreground mb-2">File Not Recognized</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Ensure your file is actually in HEIC or HEIF format. Some files may have incorrect extensions. Try opening the 
-                    file on an iPhone or Mac to verify it's a valid HEIC image.
-                  </p>
-                </div>
-              </div>
             </section>
 
             <section>
