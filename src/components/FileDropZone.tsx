@@ -23,9 +23,9 @@ const FileDropZone = ({
 
   const getAcceptString = () => {
     switch (acceptedTypes) {
-      case "images": return "image/jpeg,image/png,image/gif,image/webp";
+      case "images": return "image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif";
       case "pdf": return "application/pdf";
-      case "both": return "image/jpeg,image/png,image/gif,image/webp,application/pdf";
+      case "both": return "image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif,application/pdf";
       default: return "";
     }
   };
@@ -47,7 +47,8 @@ const FileDropZone = ({
       return false;
     }
     const acceptedMimeTypes = getAcceptString().split(",");
-    if (!acceptedMimeTypes.includes(file.type)) {
+    const fileExt = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
+    if (!acceptedMimeTypes.includes(file.type) && !acceptedMimeTypes.includes(fileExt) && file.type !== '') {
       setError(`Please select a valid file type: ${getAcceptedTypesLabel()}`);
       return false;
     }
