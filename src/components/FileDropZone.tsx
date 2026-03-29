@@ -32,7 +32,7 @@ const FileDropZone = ({
 
   const getAcceptedTypesLabel = () => {
     switch (acceptedTypes) {
-      case "images": return "JPG, PNG, GIF, WebP";
+      case "images": return "JPG, PNG, GIF, WebP, HEIC";
       case "pdf": return "PDF";
       case "both": return "Images (JPG, PNG, GIF, WebP) or PDF";
       default: return "";
